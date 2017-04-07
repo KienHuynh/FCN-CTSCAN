@@ -1,13 +1,22 @@
 import tensorflow as tf
 
 class loss(object):
-    def __init__(self, target, loss_cfg, global_cfg, weight=None): 
-	self.track_loss = global_cfg.track_loss
-        self.lkey = loss_cfg.lkey
+    """
+    This class work by adding loss values (computed from the net + target values) into the loss collection, named [lkey]
+    Before running actual computation, it will collect all added losses from the collection and add them together
+    """
+    def __init__(self, global_cfg): 
+	"""__init__
+
+        :param global_cfg: global config instance
+        """
+
+        self.use_tboard = global_cfg.use_tboard
+        self.lkey = global_cfg.lkey
         self.wkey = global_cfg.wkey
 
     def softmax_log_loss(self, X, target, target_weight=None, lm=1):
-    	"""softmax_log_loss
+        """softmax_log_loss
 	Compute the softmax log loss using X and target then add it to lkey collection
         Class dim is -1
 
@@ -22,8 +31,8 @@ class loss(object):
             target_weight=1
         l = -tf.reduce_mean(weight*target*lsm, name='softmax_log_loss')
         tf.add_to_collection(self.lkey, l)
-        if (self.track_loss):
-            tf.summary.scalar(l)
+        if (self.use_tboard):
+            tf.summary.scalar('softmax_log_loss', l)
 
     def l2_loss(self, X, lm):
         """l2_loss
@@ -37,5 +46,15 @@ class loss(object):
             if (self.wkey in var.op.name):
                 l = tf.multiply(tf.nn.l2_loss(var), lm, name='weight_loss')
                 tf.add_to_collection(self.lkey, l)
-    
+                if self.use_tboard:
+                    tf.summary.scalar(var.op.name + '/weight_loss', l)
 
+    def total_loss(self):
+        """total_loss
+        Compute total loss from all in the collection
+
+        """
+        l = tf.add_n(tf.get_collection(self.lkey, name='total_loss'))
+        if self.use_tboard:
+            tf.summary.scalar('total_loss', l)
+        return l
