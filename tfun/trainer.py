@@ -57,4 +57,4 @@ class trainer(object):
         # Apply grad
         apply_grad_op = self.optimizer.apply_gradients(self.grads, global_step=self.global_step, name='train')
 
-        return apply_grad_op 
+        return apply_grad_op
