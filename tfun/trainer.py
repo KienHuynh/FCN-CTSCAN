@@ -5,10 +5,9 @@ class trainer(object):
     """trainer
     This class is for creating optimizer and computing gradients
     """
-    def __init__(self, global_cfg, loss_output):
+    def __init__(self, loss_output):
         """__init__
-
-        :param global_cfg: global config instance
+        Initialize a trainer instance using global_cfg
         :param loss_output: the loss output, computed by calling total_loss in tfun/loss.py
         """
         self.batch_size = global_cfg.batch_size
@@ -17,7 +16,7 @@ class trainer(object):
         self.use_tboard = global_cfg.use_tboard
         self.optimizer = None
         self.grads = None
-        self.global_step = 0
+        #self.global_step = 0
         self.global_step = tf.Variable(0, trainable=False, name='global_step')
 
     def create_sgd_optimizer(self, lr):
@@ -37,7 +36,7 @@ class trainer(object):
         """
         self.optimizer = tf.train.AdamOptimizer(lr, beta1, beta2, eps)
 
-    def get_trainer():
+    def get_trainer(self):
         """get_trainer
         Return the appply grad object so that a tf session could run on it
         """
@@ -52,9 +51,9 @@ class trainer(object):
 
         # Add trainable variables to summary histogram
         for var in tf.trainable_variables():
-            tf.summary.hisogram(var.op.name, var)
+            tf.summary.histogram(var.op.name, var)
 
         # Apply grad
-        apply_grad_op = self.optimizer.apply_gradients(self.grad, global_step=self.global_step, name='train')
+        apply_grad_op = self.optimizer.apply_gradients(self.grads, global_step=self.global_step, name='train')
 
         return apply_grad_op 
