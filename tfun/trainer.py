@@ -1,5 +1,6 @@
 import tensorflow as tf
-
+from global_config import global_config
+global_cfg = global_config()
 class trainer(object):
     """trainer
     This class is for creating optimizer and computing gradients
@@ -11,7 +12,7 @@ class trainer(object):
         :param loss_output: the loss output, computed by calling total_loss in tfun/loss.py
         """
         self.batch_size = global_cfg.batch_size
-        self.num_sample = global_cfg.num_sample
+        self.num_train = global_cfg.num_train
         self.loss_output = loss_output
         self.use_tboard = global_cfg.use_tboard
         self.optimizer = None
