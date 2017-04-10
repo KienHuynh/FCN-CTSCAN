@@ -1,4 +1,6 @@
 import tensorflow as tf
+from global_config import global_config
+global_cfg = global_config()
 
 class loss(object):
     """
@@ -12,8 +14,7 @@ class loss(object):
         """
 
         self.use_tboard = global_cfg.use_tboard
-        self.lkey = global_cfg.lkey
-        self.wkey = global_cfg.wkey
+        self.lkey = global_cfg.lkey 
 
     def softmax_log_loss(self, X, target, target_weight=None, lm=1):
         """softmax_log_loss
@@ -34,16 +35,16 @@ class loss(object):
         if (self.use_tboard):
             tf.summary.scalar('softmax_log_loss', l)
 
-    def l2_loss(self, X, lm):
+    def l2_loss(self, wkey, lm):
         """l2_loss
-	Compute l2 weight decay of all trainable variables with name == self.wkey
-	
-        :param X: the final computation node
+	Compute l2 weight decay of all trainable variables with name == wkey
+	 
+        :param wkey: string tag, any trainable variable having this tag will be included in l2 loss
         :param lm: param indicate the important rate of this loss comparing to others
         """
         all_var = tf.trainable_variables()
         for var in all_var:
-            if (self.wkey in var.op.name):
+            if (wkey in var.op.name):
                 l = tf.multiply(tf.nn.l2_loss(var), lm, name='weight_loss')
                 tf.add_to_collection(self.lkey, l)
                 if self.use_tboard:
