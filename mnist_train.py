@@ -56,6 +56,7 @@ class logger_hook(tf.train.SessionRunHook):
 if __name__ == "__main__":
     global_cfg.device = '/cpu:0'
     global_cfg.batch_size = 128
+    global_cfg.train_dir = '../data/trained/mnist/'
 
     data_path = '../data/mnist.pkl.gz'
     dataset = loadMNIST(data_path)
@@ -79,6 +80,7 @@ if __name__ == "__main__":
     # Create placeholder
     x = tf.placeholder(global_cfg.dtype, name='input_img')
     y = tf.placeholder(global_cfg.dtype, name='target')
+    
     # Create the model 
     kernel_shape = (3,3,1,64) 
     with tf.variable_scope('conv1') as scope:
@@ -112,30 +114,38 @@ if __name__ == "__main__":
 
     with tf.variable_scope('fc') as scope:
         x = create_linear_layer(x, (3*3*256, 10), use_bias=True, name=scope.name)
- 
+    x_shape = tf.shape(x) 
+    x = tf.reshape(x, (x_shape[0], 1, 1, x_shape[1])) 
     l = loss()
-    l.softmax_log_loss(x, train_Y)
+    l.softmax_log_loss(x, y)
     l.l2_loss('weight', lm=0.0005)
     total_loss = l.total_loss()
 
     t = trainer(total_loss)
     t.create_adam_optimizer(0.001)
     t_ = t.get_trainer()
+    
+    num_ite_per_epoch = int(
+            np.ceil(float(global_cfg.num_train)/float(global_cfg.batch_size))
+        )
+    tf.global_variables_initializer()
+    merged = tf.summary.merge_all()
+    summary_writer = tf.summary.FileWriter(global_cfg.train_dir + '/train')
+
     with tf.train.MonitoredTrainingSession(
             checkpoint_dir=global_cfg.train_dir,
             hooks=[tf.train.StopAtStepHook(last_step=global_cfg.max_step),
                 tf.train.NanTensorHook(total_loss),
                 logger_hook(total_loss)]
             ) as sess:
-        while not sess.should_stop():
+        for s in range(global_cfg.max_step):
             # create mini batches
-            num_ite_per_epoch = int(
-                    np.ceil(float(global_cfg.num_train)/float(global_cfg.batch_size))
-                    )
-            for i in range(num_ite_per_epoch):
-                batch_range = range(i*global_cfg.batch_size, (i+1)*global_cfg.batch_size)
-                if (batch_range[-1] > global_cfg.num_train):
-                    batch_range = range(i*global_cfg.batch_size, global_cfg.num_train)
-                batch_x = train_X[batch_range, :, :, :]
-                batch_y = train_Y[batch_range, :, :, :]
-                sess.run(t_, feed_dict={'input_img:0': batch_x, 'target:0': batch_y}) 
+            i = s % num_ite_per_epoch
+            batch_range = range(i*global_cfg.batch_size, (i+1)*global_cfg.batch_size)
+            if (batch_range[-1] > global_cfg.num_train):
+                batch_range = range(i*global_cfg.batch_size, global_cfg.num_train)
+            batch_x = train_X[batch_range, :, :, :]
+            batch_y = train_Y[batch_range, :, :, :]
+            summary, _ = sess.run([merged, t_], feed_dict={'input_img:0': batch_x, 'target:0': batch_y})           
+            if (global_cfg.use_tboard):
+                summary_writer.add_summary(summary, s)
