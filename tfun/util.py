@@ -1,8 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import pdb
-from global_config import global_config
-global_cfg = global_config()
+import global_config as global_cfg
 
 def create_one_hot(target_vector, num_class, dtype=np.float32):
     """
@@ -34,3 +33,17 @@ def create_var(name, shape=None, initializer=None, trainable=True):
         
         var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
         return var
+
+def create_conv_layer(x, kernel_shape, use_bias, stride=[1,1,1,1], padding='SAME', activation=tf.nn.relu, wkey='weight', bkey='bias', name=None):
+
+    kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
+    conv_result = tf.nn.conv2d(x, kernel, stride, padding=padding)
+    if (use_bias):
+        bias_shape = [1,1,1,kernel_shape[3]]
+        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
+        conv_result = conv_result + bias
+    if (activation != None):
+        conv_result = activation(conv_result, name=name)
+    
+    return conv_result
+
