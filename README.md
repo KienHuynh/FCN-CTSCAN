@@ -1,3 +1,9 @@
 # TensorFun
 
-A small TF project created to test some machine learning problems
+A small TensorFlow project created to test some machine learning problems
+
+Requirement:
+
+* python 2.7
+* tensorflow
+* numpy
