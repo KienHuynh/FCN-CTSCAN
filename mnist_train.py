@@ -1,6 +1,6 @@
 from tfun.loss import loss
 from tfun.trainer import trainer
-from tfun.util import create_one_hot, create_var
+from tfun.util import create_one_hot, create_var, create_conv_layer, create_linear_layer
 import tfun.global_config as global_cfg
 
 import tensorflow as tf
@@ -80,81 +80,39 @@ if __name__ == "__main__":
     x = tf.placeholder(global_cfg.dtype, name='input_img')
     y = tf.placeholder(global_cfg.dtype, name='target')
     # Create the model 
-    kernel_shape = (3,3,1,64)
-    bias_shape = (1,1,1,64)
+    kernel_shape = (3,3,1,64) 
     with tf.variable_scope('conv1') as scope:
-        kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
-        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-        conv_result = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
-        conv_result = conv_result + bias
-        conv_result = tf.nn.relu(conv_result, name=scope.name)
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
     
-    x = conv_result 
-    kernel_shape = (3, 3, 64, 64)
-    bias_shape = (1,1,1,64)
+    kernel_shape = (3,3,64,64)
     with tf.variable_scope('conv2') as scope:
-        kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
-        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-        conv_result = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
-        conv_result = conv_result + bias
-        conv_result = tf.nn.relu(conv_result, name=scope.name)
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
     
-    x = conv_result
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool1')
     
-    kernel_shape = (3, 3, 64, 128)
-    bias_shape = (1,1,1,128)
+    kernel_shape = (3, 3, 64, 128) 
     with tf.variable_scope('conv3') as scope:
-        kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
-        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-        conv_result = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
-        conv_result = conv_result + bias
-        conv_result = tf.nn.relu(conv_result, name=scope.name)
-    
-    x = conv_result
-    kernel_shape = (3, 3, 128, 128)
-    bias_shape = (1,1,1,128)
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+
+    kernel_shape = (3, 3, 128, 128) 
     with tf.variable_scope('conv4') as scope:
-        kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
-        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-        conv_result = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
-        conv_result = conv_result + bias
-        conv_result = tf.nn.relu(conv_result, name=scope.name)
-    
-    x = conv_result
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+     
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool2')
 
     kernel_shape = (3, 3, 128, 256)
-    bias_shape = (1,1,1,256)
     with tf.variable_scope('conv5') as scope:
-        kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
-        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-        conv_result = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
-        conv_result = conv_result + bias
-        conv_result = tf.nn.relu(conv_result, name=scope.name)
-    
-    x = conv_result
-    kernel_shape = (3, 3, 256, 256)
-    bias_shape = (1,1,1,256)
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+     
+    kernel_shape = (3, 3, 256, 256) 
     with tf.variable_scope('conv6') as scope:
-        kernel = create_var('weight', shape=kernel_shape, initializer=tf.contrib.layers.xavier_initializer())
-        bias = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-        conv_result = tf.nn.conv2d(x, kernel, [1, 1, 1, 1], padding='SAME')
-        conv_result = conv_result + bias
-        conv_result = tf.nn.relu(conv_result, name=scope.name)
-    
-    x = conv_result
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+     
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool3')
 
     with tf.variable_scope('fc') as scope:
-        x_shape = tf.shape(x)
-        reshape = tf.reshape(x, [x_shape[0], -1], name='reshape')
-        w = create_var('weight', shape=(3*3*256, 10), initializer=tf.contrib.layers.xavier_initializer())
-        b = create_var('bias', shape=(10, ), initializer=tf.contrib.layers.xavier_initializer())
-
-        x = tf.nn.bias_add(tf.matmul(reshape, w), b, name=scope.name)
-
-    pdb.set_trace()
+        x = create_linear_layer(x, (3*3*256, 10), use_bias=True, name=scope.name)
+ 
     l = loss()
     l.softmax_log_loss(x, train_Y)
     l.l2_loss('weight', lm=0.0005)
@@ -163,7 +121,6 @@ if __name__ == "__main__":
     t = trainer(total_loss)
     t.create_adam_optimizer(0.001)
     t_ = t.get_trainer()
-    pdb.set_trace()
     with tf.train.MonitoredTrainingSession(
             checkpoint_dir=global_cfg.train_dir,
             hooks=[tf.train.StopAtStepHook(last_step=global_cfg.max_step),
@@ -181,5 +138,4 @@ if __name__ == "__main__":
                     batch_range = range(i*global_cfg.batch_size, global_cfg.num_train)
                 batch_x = train_X[batch_range, :, :, :]
                 batch_y = train_Y[batch_range, :, :, :]
-                sess.run(t_, feed_dict={'input_img:0': batch_x, 'target:0': batch_y})
-    pdb.set_trace()
+                sess.run(t_, feed_dict={'input_img:0': batch_x, 'target:0': batch_y}) 
