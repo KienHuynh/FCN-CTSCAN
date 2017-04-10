@@ -7,10 +7,9 @@ class loss(object):
     This class work by adding loss values (computed from the net + target values) into the loss collection, named [lkey]
     Before running actual computation, it will collect all added losses from the collection and add them together
     """
-    def __init__(self, global_cfg): 
+    def __init__(self): 
 	"""__init__
-
-        :param global_cfg: global config instance
+        Init a loss instance using global_cfg
         """
 
         self.use_tboard = global_cfg.use_tboard
@@ -27,10 +26,10 @@ class loss(object):
     	:param lm: param indicate the important rate of this loss comparing to others
     	""" 
 	xdev = X - tf.reduce_max(X, keep_dims=True, reduction_indices=[-1])
-        lsm = xdev - tf.log(tf.sum(tf.exp(xdev), keep_dims=True, reduction_indices=[-1]))
+        lsm = xdev - tf.log(tf.reduce_sum(tf.exp(xdev), keep_dims=True, reduction_indices=[-1]))
         if (target_weight == None):
             target_weight=1
-        l = -tf.reduce_mean(weight*target*lsm, name='softmax_log_loss')
+        l = -tf.reduce_mean(target_weight*target*lsm, name='softmax_log_loss')
         tf.add_to_collection(self.lkey, l)
         if (self.use_tboard):
             tf.summary.scalar('softmax_log_loss', l)
@@ -55,7 +54,7 @@ class loss(object):
         Compute total loss from all in the collection
 
         """
-        l = tf.add_n(tf.get_collection(self.lkey, name='total_loss'))
+        l = tf.add_n(tf.get_collection(self.lkey), name='total_loss')
         if self.use_tboard:
             tf.summary.scalar('total_loss', l)
         return l
