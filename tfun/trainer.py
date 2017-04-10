@@ -1,6 +1,7 @@
 import tensorflow as tf
-from global_config import global_config
-global_cfg = global_config()
+import global_config as global_cfg
+
+
 class trainer(object):
     """trainer
     This class is for creating optimizer and computing gradients
