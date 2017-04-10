@@ -1,4 +1,8 @@
 import numpy as np
+import tensorflow as tf
+import pdb
+from global_config import global_config
+global_cfg = global_config()
 
 def create_one_hot(target_vector, num_class, dtype=np.float32):
     """
@@ -16,3 +20,17 @@ def create_one_hot(target_vector, num_class, dtype=np.float32):
     
     return result
 
+def create_var(name, shape=None, initializer=None, trainable=True):
+    """create_var
+    Create a tensor variable
+    If GPU should be used, specify it with global_cfg.device = '/gpu:0'
+    :param name: name of the variable
+    :param shape: the shape of the variable, tuple or list of int
+    :param initializer: an tf initializer instance or a numpy array
+    :param trainable: specify if the var should be trained in the main loop
+    """ 
+    with tf.device(global_cfg.device):
+        dtype = global_cfg.dtype
+        
+        var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype, trainable=trainable)
+        return var
