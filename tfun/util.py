@@ -1,7 +1,9 @@
 import numpy as np
 import tensorflow as tf
-import pdb
 import global_config as global_cfg
+import h5py
+
+import pdb
 
 def create_one_hot(target_vector, num_class, dtype=np.float32):
     """create_one_hot
@@ -81,3 +83,28 @@ def create_linear_layer(x, w_shape, use_bias, activation=None, wkey='weight', in
     if (activation != None):
         x = activation(x)
     return x
+
+def SaveH5(obj, file_name):
+    """ SaveH5
+    Save numpy data to HDF5 file
+    Use this when pickle can't save large file 
+    :param obj: dict of numpy arrays
+    :param file_name: file name
+    """
+    with h5py.File(file_name, 'w') as hf:
+        for k, v in obj.iteritems():
+            hf.create_dataset(k, data=v)
+
+
+def LoadH5(file_name):
+    """ LoadH5
+    Load numpy data from HDF5 file 
+    :param obj: dict of numpy arrays
+    :param file_name: file name
+    """
+    obj = {}
+    with h5py.File(file_name, 'r') as hf:
+        for k in hf.keys():
+            obj[k] = np.asarray(hf.get(k))
+
+    return obj
