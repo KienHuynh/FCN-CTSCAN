@@ -53,7 +53,7 @@ class logger_hook(tf.train.SessionRunHook):
             format_str = ('%s: step %d, loss = %.3f (%.1f examples/sec; %.3f sec/batch')
             print(format_str % (datetime.now(), self.step, loss_value, examples_per_sec, sec_per_batch))
             
-if __name__ == "__main__":
+if __name__ == '__main__':
     global_cfg.device = '/cpu:0'
     global_cfg.batch_size = 128
     global_cfg.train_dir = '../data/trained/mnist/'
