@@ -16,6 +16,13 @@ import pdb
 def create_classifier_dnn():
      
     x = tf.placeholder(global_cfg.dtype, name='input_img') 
+    is_train = tf.Variable(True, trainable=False, name='is_train') # For dropout train/test
+     
+    keep_rate = 0.9
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout0')
 
     # CONV STACK 1
     kernel_shape = (3, 3, 3, 32)
@@ -28,12 +35,24 @@ def create_classifier_dnn():
    
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool1')
 
+    keep_rate = 0.8
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout1')
+
     # CONV STACK 2
     kernel_shape = (3, 3, 32, 64)
     with tf.variable_scope('conv2_1') as scope:
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool2')
+    
+    keep_rate = 0.7
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout2')
 
     # CONV STACK 3
     kernel_shape = (3, 3, 64, 128)
@@ -42,6 +61,13 @@ def create_classifier_dnn():
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool3')
 
+    keep_rate = 0.6
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout3')
+
+
     # CONV STACK 4
     kernel_shape = (3, 3, 128, 256)
     with tf.variable_scope('conv4_1') as scope:
@@ -49,12 +75,23 @@ def create_classifier_dnn():
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool4')
 
+    keep_rate = 0.5
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout4')
+
     # CONV STACK 5
     kernel_shape = (3, 3, 256, 512)
     with tf.variable_scope('conv5_1') as scope:
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool5')
+
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout4')
 
     # CONV STACK 6
     kernel_shape = (3, 3, 512, 512)
@@ -64,6 +101,11 @@ def create_classifier_dnn():
     kernel_shape = (3, 3, 512, 512)
     with tf.variable_scope('conv6_2') as scope:
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+
+    x = tf.cond(is_train,
+            lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
+            lambda: x * keep_rate,
+            name='dropout4')
 
     # This is basically a fully connected layer under conv2D disguise
     kernel_shape = (2, 2, 512, 4)
@@ -227,7 +269,7 @@ if __name__ == '__main__':
                         pdb.set_trace()
 
                     if (global_cfg.use_tboard): 
-                        summary_writer_val.add_summary(val_summar, vgs)
+                        summary_writer_val.add_summary(val_summary, vgs)
 
                     print(log_str % ('Val', val_loss, v_s, num_val_ite, float(global_cfg.batch_size)/(time.time()-t0))) 
 
