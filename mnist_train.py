@@ -56,9 +56,9 @@ class logger_hook(tf.train.SessionRunHook):
 if __name__ == '__main__':
     global_cfg.device = '/cpu:0'
     global_cfg.batch_size = 128
-    global_cfg.train_dir = '../data/trained/mnist/'
+    global_cfg.train_dir = '../../data/trained/mnist/'
 
-    data_path = '../data/mnist.pkl.gz'
+    data_path = '../../data/mnist.pkl.gz'
     dataset = loadMNIST(data_path)
     train_X, train_Y = dataset[0]
     val_X, val_Y = dataset[1]
