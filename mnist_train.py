@@ -130,7 +130,7 @@ if __name__ == '__main__':
         )
     tf.global_variables_initializer()
     merged = tf.summary.merge_all()
-    summary_writer = tf.summary.FileWriter(global_cfg.train_dir + '/train')
+    summary_writer = tf.summary.FileWriter(global_cfg.train_dir + '/train', total_loss.graph)
 
     with tf.train.MonitoredTrainingSession(
             checkpoint_dir=global_cfg.train_dir,
@@ -148,4 +148,5 @@ if __name__ == '__main__':
             batch_y = train_Y[batch_range, :, :, :]
             summary, _ = sess.run([merged, t_], feed_dict={'input_img:0': batch_x, 'target:0': batch_y})           
             if (global_cfg.use_tboard):
+                #pdb.set_trace()
                 summary_writer.add_summary(summary, s)
