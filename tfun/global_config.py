@@ -13,7 +13,7 @@ num_val = 0
 
 max_step = 1000000 
 log_freq = 1
-val_freq = 1000
+val_freq = 160
 
 save_freq = 100
 ckpt_name = 'model.ckpt'
