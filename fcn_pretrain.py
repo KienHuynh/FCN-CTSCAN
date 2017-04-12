@@ -197,6 +197,7 @@ if __name__ == '__main__':
         # Get the save number
         save_num = int(re.findall(r'\d+', ckpt)[-1])
         ckpt = global_cfg.train_dir + (global_cfg.ckpt_name % ('%07d' % save_num))
+        pdb.set_trace()
     else:
         ckpt = None
         save_num = 0
@@ -223,19 +224,20 @@ if __name__ == '__main__':
                     [merged, 'total_loss:0', t_, tgs_op],
                     feed_dict={'input_img:0': batch_x, 'target:0': batch_y, 'is_train:0': 1})
             
-            # If use tboard, start adding summary
-            if (global_cfg.use_tboard):
-                #pdb.set_trace()
-                summary_writer_train.add_summary(train_summary, tgs)
-
+            
             # Print live log on screen
             if (s % global_cfg.log_freq == 0):
-               print(log_str % ('Train', 
+                print(log_str % ('Train', 
                    train_loss,
                    s,
                    global_cfg.max_step, 
                    float(global_cfg.batch_size*global_cfg.log_freq)/(time.time()-t0)))
-          
+                # If use tboard, start adding summary
+                if (global_cfg.use_tboard):
+                    #pdb.set_trace()
+                    summary_writer_train.add_summary(train_summary, tgs)
+
+
             # Validation
             if ((s+1) % global_cfg.val_freq == 0):    
                 for v_s in range(num_val_ite):
@@ -250,9 +252,8 @@ if __name__ == '__main__':
                             feed_dict={'input_img:0': batch_x, 'target:0': batch_y, 'is_train:0':0})
                     except Exception as Er:
                         pdb.set_trace()
-
-                    if (global_cfg.use_tboard): 
-                        summary_writer_val.add_summary(val_summary, vgs)
-
-                    print(log_str % ('Val', val_loss, v_s, num_val_ite, float(global_cfg.batch_size)/(time.time()-t0))) 
+                    if (v_s % global_cfg.log_freq == 0):
+                        if (global_cfg.use_tboard): 
+                            summary_writer_val.add_summary(val_summary, vgs)
+                        print(log_str % ('Val', val_loss, v_s, num_val_ite, float(global_cfg.batch_size)/(time.time()-t0))) 
 
