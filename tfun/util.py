@@ -61,9 +61,9 @@ def create_conv_layer(x, kernel_shape, use_bias, stride=[1,1,1,1], padding='SAME
     
     return conv_result
 
-def create_linear_layer(x, w_shape, use_bias, activation=None, wkey='weight', initializer=tf.contrib.layers.xavier_initializer(), name=None):
-    """create_linear_layer
-    Create a linear layer with optional bias and activation function
+def create_fc_layer(x, w_shape, activation=None, wkey='weight', initializer=tf.contrib.layers.xavier_initializer(), name=None):
+    """create_fc_layer
+    Create a fully connected layer with optional bias and activation function
     :param x: input, a tensor with num dim >= 2
     :param w_shape: shape of the weight, [in_dim, out_dim]
     :param use_bias: boolean, specify if bias should be used here
@@ -79,10 +79,34 @@ def create_linear_layer(x, w_shape, use_bias, activation=None, wkey='weight', in
     bias_shape = (w_shape[1], )
     w = create_var('weight', shape=w_shape, initializer=initializer)
     b = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
+    x = tf.matmul(x_reshape, w)
     x = tf.nn.bias_add(tf.matmul(x_reshape, w), b, name=name)
+    
     if (activation != None):
         x = activation(x)
     return x
+
+def create_projection_layer(x, w_shape, activation=None, wkey='weight', initializer=tf.contrib.layers.xavier_initializer(), name=None):
+    """create_projection_layer
+    Create a (linear) prjection layer (x * w)
+    This is different from fc layer in that we only treat the last dim of x (usually class-dim) as feature dim. Therefore, only the last dim will change after projection, the other dims will remain the same
+    :param x: input, a tensor with num dim >= 2
+    :param w_shape: shape of the weight, [in_dim, out_dim]
+    :param use_bias: boolean, specify if bias should be used here
+    :param activation: activation function, can be None. If an activation functin is passed, it should only take on argument
+    :param wkey: name of the kernel variable. Since, the loss.l2_loss is computed based on the name of the variable, you can use this to include the variable in l2_loss or not
+    :param initializer: tensorflow intializer
+    :param name: name of the operator
+    """
+       
+    bias_shape = (w_shape[1], )
+    w = create_var('weight', shape=w_shape, initializer=initializer)
+    b = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
+    x = tf.nn.bias_add(tf.matmul(x, w), b, name=name)
+    if (activation != None):
+        x = activation(x)
+    return x
+
 
 def SaveH5(obj, file_name):
     """ SaveH5
@@ -108,3 +132,42 @@ def LoadH5(file_name):
             obj[k] = np.asarray(hf.get(k))
 
     return obj
+
+class save_hook(tf.train.SessionRunHook):
+    def __init__(self, saver, file_name, save_freq, num):
+        """__init__
+
+        :param saver: tf.train.Saver object
+        :param file_name: full file path to save
+        :param save_freq: save frequency
+        :param num: global step, this will be included in checkpoint file name
+        """
+
+        super(save_hook, self).__init__()
+        self.saver = saver
+        self.file_name = file_name
+        self.save_freq = save_freq
+        self.num = num
+        self.init = False
+        
+
+    def before_run(self, run_context):
+        file_path = self.file_name % ('%07d' % self.num)
+        if (not os.path.exists(file_path)):
+            self.init = True
+
+        if (not self.init):
+            session = run_context.session
+            file_path = self.file_name % ('%07d' % self.num)
+            saver.restore(session, file_path)
+            self.init = True
+            print('Loaded checkpoint at %s' % file_path)
+
+    def after_run(self, run_context, run_values):
+        session = run_context.session
+        self.num += 1 
+        if (self.num % self.save_freq == 0): 
+            file_path = self.file_name % ('%07d' % self.num)
+            self.saver.save(session, file_path)           
+            print('Save checkpoint at %s' % file_path) 
+
