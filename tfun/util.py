@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import global_config as global_cfg
 import h5py
-
+import os
 import pdb
 
 def create_one_hot(target_vector, num_class, dtype=np.float32):
@@ -102,7 +102,7 @@ def create_projection_layer(x, w_shape, activation=None, wkey='weight', initiali
     bias_shape = (w_shape[1], )
     w = create_var('weight', shape=w_shape, initializer=initializer)
     b = create_var('bias', shape=bias_shape, initializer=tf.constant_initializer(np.zeros(bias_shape)))
-    x = tf.nn.bias_add(tf.matmul(x, w), b, name=name)
+    x = tf.nn.bias_add(tf.tensordot(x, w, [[-1],[0]]), b, name=name)
     if (activation != None):
         x = activation(x)
     return x
