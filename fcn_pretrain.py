@@ -1,6 +1,6 @@
 from tfun.loss import loss
 from tfun.trainer import trainer
-from tfun.util import create_one_hot, create_conv_layer, LoadH5
+from tfun.util import create_one_hot, create_conv_layer, LoadH5, save_hook
 import tfun.global_config as global_cfg
 
 import tensorflow as tf
@@ -35,7 +35,7 @@ def create_classifier_dnn():
    
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool1')
 
-    keep_rate = 0.8
+    keep_rate = 0.5
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
             lambda: x,
@@ -45,10 +45,14 @@ def create_classifier_dnn():
     kernel_shape = (3, 3, 32, 64)
     with tf.variable_scope('conv2_1') as scope:
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+    
+    kernel_shape = (3, 3, 64, 64)
+    with tf.variable_scope('conv2_2') as scope:
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool2')
 
-    keep_rate = 0.7
+    keep_rate = 0.5
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
             lambda: x,
@@ -57,6 +61,10 @@ def create_classifier_dnn():
     # CONV STACK 3
     kernel_shape = (3, 3, 64, 128)
     with tf.variable_scope('conv3_1') as scope:
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name) 
+    
+    kernel_shape = (3, 3, 128, 128)
+    with tf.variable_scope('conv3_2') as scope:
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool3')
@@ -71,6 +79,10 @@ def create_classifier_dnn():
     # CONV STACK 4
     kernel_shape = (3, 3, 128, 256)
     with tf.variable_scope('conv4_1') as scope:
+        x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
+    
+    kernel_shape = (3, 3, 256, 256)
+    with tf.variable_scope('conv4_2') as scope:
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool4')
@@ -91,7 +103,7 @@ def create_classifier_dnn():
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
             lambda: x,
-            name='dropout4')
+            name='dropout5')
 
     # CONV STACK 6
     kernel_shape = (3, 3, 512, 512)
@@ -105,7 +117,7 @@ def create_classifier_dnn():
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
             lambda: x,
-            name='dropout4')
+            name='dropout6')
 
     # This is basically a fully connected layer under conv2D disguise
     kernel_shape = (2, 2, 512, 4)
@@ -113,39 +125,9 @@ def create_classifier_dnn():
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name, padding='VALID')
     return x
 
-class save_hook(tf.train.SessionRunHook):
-    def __init__(self, saver, file_name, save_freq, num):
-        super(save_hook, self).__init__()
-        self.saver = saver
-        self.file_name = file_name
-        self.save_freq = save_freq
-        self.num = num
-        self.init = False
-        
-
-    def before_run(self, run_context):
-        file_path = self.file_name % ('%07d' % self.num)
-        if (not os.path.exists(file_path)):
-            self.init = True
-
-        if (not self.init):
-            session = run_context.session
-            file_path = self.file_name % ('%07d' % self.num)
-            saver.restore(session, file_path)
-            self.init = True
-            print('Loaded checkpoint at %s' % file_path)
-
-    def after_run(self, run_context, run_values):
-        session = run_context.session
-        self.num += 1 
-        if (self.num % self.save_freq == 0): 
-            file_path = self.file_name % ('%07d' % self.num)
-            self.saver.save(session, file_path)           
-            print('Save checkpoint at %s' % file_path) 
-
 if __name__ == '__main__':
     global_cfg.device = '/gpu:0'  
-    global_cfg.train_dir = '../../data/trained/fcn_pretrain/'
+    global_cfg.train_dir = '../../data/trained/fcn_pretrain1/'
     global_cfg.batch_size = 64
     global_cfg.ckpt_name = 'fcn_pretrain%s.ckpt'
 
