@@ -16,12 +16,12 @@ import pdb
 def create_classifier_dnn():
      
     x = tf.placeholder(global_cfg.dtype, name='input_img') 
-    is_train = tf.Variable(True, trainable=False, name='is_train') # For dropout train/test
+    is_train = tf.placeholder(np.bool, name='is_train') # For dropout train/test
      
     keep_rate = 0.9
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout0')
 
     # CONV STACK 1
@@ -38,7 +38,7 @@ def create_classifier_dnn():
     keep_rate = 0.8
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout1')
 
     # CONV STACK 2
@@ -47,11 +47,11 @@ def create_classifier_dnn():
         x = create_conv_layer(x, kernel_shape, use_bias=True, activation=tf.nn.relu, name=scope.name)
 
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool2')
-    
+
     keep_rate = 0.7
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout2')
 
     # CONV STACK 3
@@ -64,7 +64,7 @@ def create_classifier_dnn():
     keep_rate = 0.6
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout3')
 
 
@@ -78,7 +78,7 @@ def create_classifier_dnn():
     keep_rate = 0.5
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout4')
 
     # CONV STACK 5
@@ -90,7 +90,7 @@ def create_classifier_dnn():
 
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout4')
 
     # CONV STACK 6
@@ -104,7 +104,7 @@ def create_classifier_dnn():
 
     x = tf.cond(is_train,
             lambda: tf.nn.dropout(x, keep_prob = keep_rate, seed=global_cfg.rng_seed),
-            lambda: x * keep_rate,
+            lambda: x,
             name='dropout4')
 
     # This is basically a fully connected layer under conv2D disguise
@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
     # Create trainer object
     t = trainer(total_loss)
-    t.create_adam_optimizer(lr=0.0005)
+    t.create_adam_optimizer(lr=0.0002)
     t_ = t.get_trainer()
 
     num_ite_per_epoch = int(
@@ -236,9 +236,10 @@ if __name__ == '__main__':
             batch_range = range(i, global_cfg.num_train, num_ite_per_epoch)  
             batch_x = train_X[batch_range, :, :, :]
             batch_y = train_Y[batch_range, :, :, :]
+            
             train_summary, train_loss, _, tgs = sess.run(
                     [merged, 'total_loss:0', t_, tgs_op],
-                    feed_dict={'input_img:0': batch_x, 'target:0': batch_y})
+                    feed_dict={'input_img:0': batch_x, 'target:0': batch_y, 'is_train:0': 1})
             
             # If use tboard, start adding summary
             if (global_cfg.use_tboard):
@@ -261,10 +262,10 @@ if __name__ == '__main__':
                     batch_x = val_X[batch_range, :, :, :]
                     batch_y = val_Y[batch_range, :, :, :]
 
-                    try:
+                    try: 
                         val_summary, val_loss, vgs = sess.run(
                             [merged, 'total_loss:0', vgs_op], 
-                            feed_dict={'input_img:0': batch_x, 'target:0': batch_y})
+                            feed_dict={'input_img:0': batch_x, 'target:0': batch_y, 'is_train:0':0})
                     except Exception as Er:
                         pdb.set_trace()
 
