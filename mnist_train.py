@@ -1,6 +1,6 @@
 from tfun.loss import loss
 from tfun.trainer import trainer
-from tfun.util import create_one_hot, create_var, create_conv_layer, create_linear_layer
+from tfun.util import create_one_hot, create_var, create_conv_layer, create_fc_layer
 import tfun.global_config as global_cfg
 
 import tensorflow as tf
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     x = tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1,2,2,1], padding = 'VALID', name = 'pool3')
 
     with tf.variable_scope('fc') as scope:
-        x = create_linear_layer(x, (3*3*256, 10), use_bias=True, name=scope.name)
+        x = create_fc_layer(x, (3*3*256, 10), name=scope.name)
     x_shape = tf.shape(x) 
     x = tf.reshape(x, (x_shape[0], 1, 1, x_shape[1])) 
     l = loss()
