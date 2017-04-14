@@ -2,9 +2,8 @@
 
 A small TensorFlow project created to test some machine learning problems
 
-Currently problems that I'm working on:
+Currently problem(s) that I'm working on:
 * Using fcn to segment CT images
-* GAN
 
 Requirement:
 
@@ -13,6 +12,7 @@ Requirement:
 * numpy
 * matplotlib
 * h5py (if you want to use my preprocessed data)
+
 
 ================================================
 ## Abdominal CT image segmentation using fully convolutional networks
@@ -24,7 +24,7 @@ Requirement:
 * Light blue: bone
 * Orange: liver
 * Teal: kidney
-* Red: anything else
+* Red: everything else
 
 Dataset: http://www.ircad.fr/research/computer/
 
@@ -33,12 +33,12 @@ Input construction:
 * Two zero images will be padded before and after the top/bottom CT scan image.
 
 Preprocessing:
-* Contrast limited histogram equilization per CT image.
+* Contrast limited histogram equilization per CT image (CLAHE)).
 * Computing mean and std (shape is [1,1,1,3]) on train data. Subtract each stack of 3 iamge to the mean and divide them with the std.
 
 Network architecture:
-* The network is very similar to VGG, however, I reduced the number of params and layers since the number of train/test samples are not as large as PASCAL VOC or imagenet.
-* The rest of the fcn architecture is generally the same. Bilinear upsampling was used instead of tranposed conv to avoid overfitting.
+* The classification network is very similar to VGG. However, I reduced the number of params and layers since the number of train/test samples and classes are not as large as PASCAL VOC or imagenet.
+* The rest of the fcn architecture is generally the same. Bilinear upsampling was used instead of tranposed convolution to avoid overfitting.
 
 Training procedure:
 * Before traing the actual fcnn, I had to pretrain the classification network first (as you can see in fcn_pretrain.py). Training samples for this part was generated randomly from the preprocessed data.
