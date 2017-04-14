@@ -44,3 +44,20 @@ Training procedure:
 * The training method and hyper params can be seen in fcn_ctscan.py.
 
 **Note: my current PC is very limited in computing power, therefore for each patient I only sample half of the images. This resulted in a somewhat watered down precision for each class. I will redo this experiment later on a high-end computer, my expectation is that the overall accuracy will be higher.**
+
+Some preliminary results:
+Confusion matrix (except for precision and recall, the unit is pixel):
+
+|| Bone       | Kidney           | Liver | Other | Recall |
+|:-:| -----------:|----------------:| -----:|------:|-------:|
+|**Bone**| 528990     |38|70    | 14171 | 0.973  |
+|**Kidney**| 133     |74522|0    | 699 | 0.989  |
+|**Liver**| 675     |10|1177178    | 27398 | 0.977  |
+|**Other**| 208497     |52340|181059    | 17539260 | 0.975  |
+|**Precision**| 0.717 | 0.587 | 0.867 | 0.998 |
+
+Other metric:
+Pixel accuracy: 0.976
+Mean accuracy: 0.979
+Mean IU (intersection over union): 0.777
+Frequency weighted IU: 0.957
