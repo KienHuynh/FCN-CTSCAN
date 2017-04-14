@@ -15,7 +15,7 @@ max_step = 1000000
 log_freq = 10
 val_freq = 160
 
-save_freq = 100
+save_freq = 500
 ckpt_name = 'model.ckpt'
 
 rng_seed = 1311
