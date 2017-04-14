@@ -20,15 +20,11 @@ Requirement:
 
 ![](https://lh3.googleusercontent.com/-ngeNapT4Coo/WPBubqpvy6I/AAAAAAAAN-Q/SsdttF6ZV7YnMHNNmfOLMpQCLW7fh0WHwCJoC/w530-h176/file1.gif)
 
-Blue: air
-
-Light blue: bone
-
-Orange: liver
-
-Teal: kidney
-
-Red: anything else
+* Blue: air
+* Light blue: bone
+* Orange: liver
+* Teal: kidney
+* Red: anything else
 
 Dataset: http://www.ircad.fr/research/computer/
 
