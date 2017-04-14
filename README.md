@@ -57,7 +57,7 @@ Confusion matrix (except for precision and recall, the unit is pixel):
 |**Precision**| 0.717 | 0.587 | 0.867 | 0.998 |
 
 Other metric:
-Pixel accuracy: 0.976
-Mean accuracy: 0.979
-Mean IU (intersection over union): 0.777
-Frequency weighted IU: 0.957
+* Pixel accuracy: 0.976
+* Mean accuracy: 0.979
+* Mean IU (intersection over union): 0.777
+* Frequency weighted IU: 0.957
