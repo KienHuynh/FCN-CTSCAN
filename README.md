@@ -23,7 +23,7 @@ Requirement:
 * Blue: air
 * Light blue: bone
 * Orange: liver
-* Teal: kidney
+* Teal/Green (depending on your screen): kidney
 * Red: everything else
 
 Dataset: http://www.ircad.fr/research/computer/
