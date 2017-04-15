@@ -33,7 +33,7 @@ Input construction:
 * Two zero images will be padded before and after the top/bottom CT scan image.
 
 Preprocessing:
-* Contrast limited histogram equilization per CT image (CLAHE)).
+* Contrast limited histogram equilization was performed on each CT image (CLAHE)).
 * Computing mean and std (shape is [1,1,1,3]) on train data. Subtract each stack of 3 iamge to the mean and divide them with the std.
 
 Network architecture:
@@ -49,13 +49,13 @@ Training procedure:
 Some preliminary results:
 Confusion matrix (except for precision and recall, the unit is pixel):
 
-|| Bone       | Kidney           | Liver | Other | Recall |
-|:-:| -----------:|----------------:| -----:|------:|-------:|
-|**Bone**| 528990     |38|70    | 14171 | 0.973  |
-|**Kidney**| 133     |74522|0    | 699 | 0.989  |
-|**Liver**| 675     |10|1177178    | 27398 | 0.977  |
-|**Other**| 208497     |52340|181059    | 17539260 | 0.975  |
-|**Precision**| 0.717 | 0.587 | 0.867 | 0.998 |
+|| Bone         |Kidney  |Liver  |Other    |Recall   |
+|:-------------:|-------:|------:| -------:|--------:|------:|
+|**Bone**       |528990  |38     |70       |14171    |0.973  |
+|**Kidney**     |133     |74522  |0        |699      |0.989  |
+|**Liver**      |675     |10     |1177178  |27398    |0.977  |
+|**Other**      |208497  |52340  |181059   |17539260 |0.975  |
+|**Precision**  |0.717   |0.587  |0.867    |0.998    |
 
 Other metric:
 * Pixel accuracy: 0.976
