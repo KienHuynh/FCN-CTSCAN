@@ -16,7 +16,7 @@ Requirement:
 
 ================================================
 ## Abdominal CT image segmentation using fully convolutional networks
-(Original method proposed in ![Jonathan Long et al., 2015](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf))
+(Original method proposed in [Jonathan Long et al., 2015](https://people.eecs.berkeley.edu/~jonlong/long_shelhamer_fcn.pdf))
 
 ![](https://lh3.googleusercontent.com/-ngeNapT4Coo/WPBubqpvy6I/AAAAAAAAN-Q/SsdttF6ZV7YnMHNNmfOLMpQCLW7fh0WHwCJoC/w530-h176/file1.gif)
 
