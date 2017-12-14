@@ -1,8 +1,5 @@
-# TensorFun
+# FCN-CTSCAN
 
-A small TensorFlow project created to test some machine learning problems
-
-Current problem(s) that I'm working on:
 * Using fcn to segment CT images
 
 Requirement:
